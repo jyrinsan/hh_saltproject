@@ -1,0 +1,5 @@
+base:
+  '*':
+    - micro
+    - apache
+    - palomuuri

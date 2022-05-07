@@ -1,0 +1,2 @@
+micro:
+  pkg.installed
