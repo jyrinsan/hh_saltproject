@@ -2,4 +2,5 @@ base:
   '*':
     - micro
     - apache
-    - palomuuri
+    - firewall
+    - postgresql
