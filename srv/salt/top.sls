@@ -1,6 +1,6 @@
 base:
   '*':
-    - micro
+    - appsit
     - firewall
     - postgresql
     - apache

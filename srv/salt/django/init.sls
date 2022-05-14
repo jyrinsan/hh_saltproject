@@ -1,44 +1,41 @@
-virtualenv:
-  pkg.installed
+asennukset:
+  pkg.installed:
+    - pkgs:
+      - virtualenv
+      - libapache2-mod-wsgi-py3
 
-libapache2-mod-wsgi-py3:
-  pkg.installed
+adduser:
+  user.present:
+    - name: django
+    - password: $1$JeVTvOSq$lbPDz6CkLxA.dmo8CWml20
 
-/home/sanna/publicwsgi:
-  file.directory
+/home/django/publicwsgi:
+  file.directory:
+    - user: django
+    - group: django
+    - mode: 0755
 
 'virtualenv -p python3 --system-site-packages env':
   cmd.run:
-    - cwd: /home/sanna/publicwsgi
+    - cwd: /home/django/publicwsgi
+    - runas: django
     - unless: ls |grep env
 
 'source env/bin/activate':
   cmd.run:
-    - cwd: /home/sanna/publicwsgi
+    - cwd: /home/django/publicwsgi
     - shell: /bin/bash
-    - unless: pöö
+    - runas: django
+    - stateful: True
 
-'pip install django':
+/home/django/publicwsgi/requirements.txt:
+  file.managed:
+    - source: salt://django/requirements.txt
+    - user: django
+    - group: django
+    - mode: 0644
+
+'pip install -r requirements.txt':
   cmd.run:
-    - cwd: /home/sanna/publicwsgi
+    - cwd: /home/django/publicwsgi
     - unless: django-admin --version
-
-'django-admin startproject sannaco':
-  cmd.run:
-    - cwd: /home/sanna/publicwsgi
-    - unless: ls | grep sannaco
-
-/etc/apache2/sites-available/sannaco.conf:
-  file.managed:
-    - source: salt://django/sannaco.conf
-
-/etc/apache2/sites-enabled/sannaco.conf:
-  file.symlink:
-    - target: ../sites-available/sannaco.conf
-
-/etc/apache2/sites-enabled/000-default.conf:
-  file.absent
-
-/home/sanna/publicwsgi/sannaco/sannaco/settings.py:
-  file.managed:
-    - source: salt://django/settings.py
