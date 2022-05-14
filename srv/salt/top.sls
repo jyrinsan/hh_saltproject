@@ -1,6 +1,8 @@
 base:
   '*':
     - micro
-    - apache
     - firewall
     - postgresql
+    - apache
+    - django
+    - myapp
