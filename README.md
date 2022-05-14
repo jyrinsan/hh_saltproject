@@ -1,9 +1,7 @@
-# Salt miniprojektini
-
-Nimeni: Sanna Jyrinki
-
+# Django ympäristö Saltilla
 Moduulin tarkoitus: Asentaa ympäristö Django-webbipalvelun kehittämiseen Apachelle sisältäen tarpeelliset työkalut
 
+Nimeni: Sanna Jyrinki
 Moduulin lisenssi: GPL2
 
 Kypsyysaste: Alpha
