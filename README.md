@@ -20,6 +20,10 @@ Kypsyysaste: Beta
 
 Latauslinkki: https://github.com/jyrinsan/hh_saltproject/tree/master/srv/salt
 
+### Lisenssi
+Moduulini lisenssini on GPL-2.0-only (GNU General Public License v2.0).
+https://opensource.org/licenses/gpl-2.0.php
+
 ### Beta-versio
 
 Moduulin ajo monta kertaa peräkkäin osoittaa sen olevan idempotentti eli muutoksia ei tapahdu kun mitään ei ole muutettu
@@ -39,3 +43,4 @@ Moduulin ajo monta kertaa peräkkäin osoittaa sen olevan idempotentti eli muuto
 - Karvinen, T. 2022a. Luettavissa [Configuration management systems 2022](https://terokarvinen.com/2021/configuration-management-systems-2022-spring/#arviointi). Luettu 03-05/22.
 - Karvinen, T. 2022b. [Django 4 Instant Customer Database Tutorial](https://terokarvinen.com/2022/django-instant-crm-tutorial/). Luettu 14-15.5.2022.
 - Karvinen, T. 2022c. [Deploy Django 4 - Production Install](https://terokarvinen.com/2022/deploy-django/?fromSearch=django). Luettu 14-15.5.2022.
+- Shellhacks Contributors. 2020. Luettavissa [Auto Answer “Yes/No” to Prompt – PowerShell & CMD](https://www.shellhacks.com/auto-answer-yes-no-prompt-powershell-cmd/). Luettu 15.5.2022.
