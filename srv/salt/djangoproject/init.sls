@@ -21,3 +21,21 @@
     - user: django
     - group: django
     - mode: 0644
+
+'echo yes python3 /manage.py collectstatic':
+  cmd.run:
+    - cwd: /home/django/publicwsgi/myapp
+    - runas: django
+
+/home/django/publicwsgi/myapp/static:
+  file.recurse:
+    - source: salt://djangoapp/static
+    - user: django
+    - group: django
+    - dir_mode: 0755
+    - file_mode: 0755
+    - makedirs: True
+    - recurse:
+      - user
+      - group
+      - mode

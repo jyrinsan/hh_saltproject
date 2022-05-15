@@ -3,3 +3,4 @@ appsit:
     - pkgs:
       - micro
       - bash-completion
+      - pwgen

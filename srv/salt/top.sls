@@ -5,4 +5,5 @@ base:
     - postgresql
     - apache
     - django
-    - myapp
+    - djangoproject
+    - crmapp

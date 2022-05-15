@@ -8,7 +8,7 @@ adduser:
   user.present:
     - name: django
     - password: $1$JeVTvOSq$lbPDz6CkLxA.dmo8CWml20
-
+    
 /home/django/publicwsgi:
   file.directory:
     - user: django
