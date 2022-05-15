@@ -14,15 +14,9 @@ Toteuttaja: Sanna Jyrinki
   - kehitysserveri, jossa django asennetaan kehitysserverinä
   - postgressql ja sen käyttöönotto djangossa vakiona olevan sqllite3:n sijaan
 
-Moduulin lisenssi: GPL2
+Moduulin lisenssi: [GNU General Public License v2.0](https://opensource.org/licenses/gpl-2.0.php)
 
 Kypsyysaste: Beta
-
-Latauslinkki: https://github.com/jyrinsan/hh_saltproject/tree/master/srv/salt
-
-### Lisenssi
-Moduulini lisenssini on GPL-2.0-only (GNU General Public License v2.0).
-https://opensource.org/licenses/gpl-2.0.php
 
 ### Beta-versio
 
