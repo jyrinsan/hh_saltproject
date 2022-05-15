@@ -1,5 +1,17 @@
 ## Django ympäristö Saltilla
-Moduulin tarkoitus: Asentaa ympäristö Django-webbipalvelun kehittämiseen Apachelle sisältäen tarpeelliset työkalut
+Moduulin tarkoitus: Asentaa ympäristö Django-webbisovelluksen kehittämiseen Linux-palvelimille. 
+
+### Suunnitelma lopulliselle versiolle
+- tuotantoserveri:
+  - appikset: hyödyllisiä pikkuohjelmia micro, bash-completion, pwgen, tree
+  - palomuuri: ufw palomuurin, asennus, enablointi ja avaus ssh ja apache portille
+  - apache asennus, testisivu ja käyttäjän kotisivu
+  - django tuotantoasennus
+  - testisovellus, jolla toiminta voidaan demota
+
+### Moduulin ulkopuolelle jääviä jatkokehitysehdotuksia
+- kehitysserveri, jossa django asennetaan kehitysserverinä
+- postgressql ja sen käyttöönotto djangossa vakiona olevan sqllite3:n sijaan
 
 Nimeni: Sanna Jyrinki
 
@@ -13,7 +25,7 @@ Moduulin lisenssi: GPL2
 
 Moduulin ajo monta kertaa peräkkäin osoittaa sen olevan idempotentti eli muutoksia ei tapahdu kun mitään ei ole muutettu
 
-![Image](images/beta1.PNG)
+![Image](images/beta.PNG)
 
 ### Alpha-versio
 - micro tekstieditori
