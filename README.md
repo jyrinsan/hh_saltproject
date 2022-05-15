@@ -3,11 +3,17 @@ Moduulin tarkoitus: Asentaa ympäristö Django-webbipalvelun kehittämiseen Apac
 
 Nimeni: Sanna Jyrinki
 
-Kypsyysaste: Alpha
+Kypsyysaste: Beta
 
 Latauslinkki: https://github.com/jyrinsan/hh_saltproject/tree/master/srv/salt
 
 Moduulin lisenssi: GPL2
+
+### Beta-versio
+
+Moduulin ajo monta kertaa peräkkäin osoittaa sen olevan idempotentti eli muutoksia ei tapahdu kun mitään ei ole muutettu
+
+![Image](images/beta1.PNG)
 
 ### Alpha-versio
 - micro tekstieditori
