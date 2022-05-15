@@ -28,8 +28,6 @@ https://opensource.org/licenses/gpl-2.0.php
 
 Moduulin ajo monta kertaa peräkkäin osoittaa sen olevan idempotentti eli muutoksia ei tapahdu kun mitään ei ole muutettu
 
-![Image](images/beta.PNG)
-
 ### Alpha-versio
 - micro tekstieditori
 - ufw palomuuri, enablointi ja avaus ssh portille
