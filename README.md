@@ -330,7 +330,33 @@ Tila **crmapp** muodostaa esimerkkisovelluksen, jonka alulla voi demota sovelluk
 
 Moduulin toteutus ja testaus suoritettiin Windows-raudalla, jossa oli asennettuna VirtualBoxiin 2 eri Debian 11-konetta, joista toisesta tehtiin salt-master ja toisesta salt-minion. Salt masterilla moduuli on /srv/salt hakemistossa, jonka sisältö vietiin versionhallintaan. Kehitystä tehtiin askel kerrallaan asentaen ensin Debianille asia manuaalisesti ja sen jälkeen automatisoimalla saltila. Useita kertoja (tai kymmeniä jopa) tehtiin uusi orja-debian kone, ja testattiin puhtaalla debianilla toimiiko moduuli.
 
+Testaus orja-koneella ennen moduulin ajoa kun mitään ei ole asennettu:
+
+<pre><font color="#55FF55"><b>sanna@sanna-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ curl http://localhost
+curl: (7) Failed to connect to localhost port 80: Connection refused
+<font color="#55FF55"><b>sanna@sanna-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ curl http://localhost/admin
+curl: (7) Failed to connect to localhost port 80: Connection refused
+<font color="#55FF55"><b>sanna@sanna-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ curl http://localhost/static
+curl: (7) Failed to connect to localhost port 80: Connection refused
+</pre>
+
 [Täältä](RUN_1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion.
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ sudo salt &apos;*&apos; state.apply | more
+[sudo] password for master: 
+ERROR: Minions returned with non-zero exit code
+slave3:
+    Minion did not return. [No response]
+    The minions may not have all finished running and any remaining minions will
+ return upon completion. To look up the return data for this job later, run the 
+following command:
+    
+    salt-run jobs.lookup_jid 20220516150644685475
+</pre>
+
+Jatkettaessa ajoa `salt-run jobs.lookup_jid 20220516150644685475` menee loppuun virheittä
+
+salt-run jobs.lookup_jid 20220516150644685475
 
 [Täältä](RUN_2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
 
