@@ -4,3 +4,4 @@ appsit:
       - micro
       - bash-completion
       - pwgen
+      - tree
