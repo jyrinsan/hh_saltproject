@@ -1,6 +1,6 @@
 ## Django tuotantoympäristö SaltStackilla
 
-Moduulin tarkoitus on asentaa Django-tuotantoympäristö webbipalvelun julkaisuun Linux-palvelimille. Moduuli asentaa djangon, apachen, tulimuurin, postgresql tietokannan sekä hyödyllisiä pikkusovelluksia, joita sovelluksen tekoon tarvitaan. Moduuli asentaa myös yksinkertaisen esimerkkisovelluksen, jolla ympäristön toimintaa voi demota. Tämän hetkinen versio käyttää vielä sqlite3 kantaa, jatkokehityksessä kanta aiotaan vaihtaa postgresql-kantaan, jonka vuoksi sen asennus on jo otettu mukaan tähän.
+Moduulin tarkoitus on asentaa Django-tuotantoympäristö webbipalvelun julkaisuun Linux-palvelimille. Moduuli asentaa djangon, apachen, tulimuurin, postgresql tietokannan sekä hyödyllisiä pikkusovelluksia, joita sovelluksen tekoon tarvitaan. Moduuli asentaa myös yksinkertaisen crm-esimerkkisovelluksen, jolla ympäristön toimintaa voi demota. Tämän hetkinen versio käyttää vielä sqlite3 kantaa, jatkokehityksessä kanta aiotaan vaihtaa postgresql-kantaan, jonka vuoksi sen asennus on jo otettu mukaan tähän.
 
 Toteuttaja: Sanna Jyrinki
 
@@ -8,18 +8,19 @@ Kypsyysaste: Beta
 
 Moduulin lisenssi: [GNU General Public License v2.0](https://opensource.org/licenses/gpl-2.0.php)
 
-### Suunnitelma lopulliselle versiolle
+### Toteutussuunnitelma
 - moduuli sisältää seuraavat tilat:
   - appikset: hyödyllisiä pikkuohjelmia micro, bash-completion, pwgen, tree
   - palomuuri: ufw palomuurin, asennus, enablointi ja avaus ssh ja apache portille
-  - apache asennus, testisivu ja käyttäjän kotisivu
-  - django tuotantoasennus
-  - testisovellus crm, jolla toiminta voidaan demota
   - postgresql: tietokanta jatkokehitystä varten (django sisältää oletuksena kevyen sqlite3 tietokannan)
+  - apache asennus, testisivu ja käyttäjän kotisivu
+  - django asennus, tuotanto-projektin luonti
+  - testisovellus crm, jolla toiminta voidaan demota
+
 - jatkokehitysehdotuksia, joita ei keretty toteuttaa tähän versioon
   - kehitysserveri, jossa django asennetaan kehitysserverinä
   - postgressql ja sen käyttöönotto djangossa vakiona olevan sqllite3:n sijaan
-  - jinjalla voisi siistiä usein toistuvat hakemistorakenteen yhdessä paikassa oleviksi vakioiksi
+  - jinjalla voisi siistiä usein toistuvat esim tunnukset/hakemistopolut yhdessä paikassa oleviksi vakioiksi
   - ssh ja sftp mahdollisesti olisi myös hyödyllistä asentaa, jos on tarpeen toimia myös ulkoisen virtuaalipalvelimen kanssa
 
 ### Toteutus
@@ -103,7 +104,7 @@ postgresql.service:
 
 ##### apache
 
-Tila **apache** asentaa apachen, muodostaa oletustestisivun ja aktivoi käyttäjien kotisivun, jos käyttäjä tekee kotisivun oman kotihakemiston public_html hakemistoon. Tila myös käynnistää apachen, jos sitä ei  vielä ole käynnistetty tai jos käyttäjän kotihakemistot aktivoivat moduulit ovat muuttuneet.
+Tila **apache** asentaa apachen, muodostaa oletustestisivun ja aktivoi käyttäjien kotisivun, jos käyttäjä tekee kotisivun oman kotihakemiston public_html hakemistoon. Tila myös käynnistää apachen.
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls apache
 default-index.html  init.sls
@@ -132,7 +133,8 @@ apache2.service:
 
 ##### django
 
-**TODO**
+Tila **django** luo django nimisen käyttäjän (salasana on django, joka asetetaa ssh tiedostoon hashattuna linux-komennolla `openssl passwd -1` [SaltStack Contributors, 2022](https://docs.saltproject.io/en/3000/ref/states/all/salt.states.user.html). Tila luo käyttäjän kotihakemiston alle publicwsgi-hakemiston ja asentaa djangon. Tilassa on myös asennettu virtualenv-ympäristö ja aktivoitu se, mutta en tiedä toimiiko se, kun se ei näkynyt missään. Ilmeisesti sillä ei ole itse toimintaan mitään vaikutusta, joten ehkäpä kokeilen vielä poistaa.
+
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls django
 init.sls  requirements.txt
@@ -184,7 +186,7 @@ adduser:
 
 ##### djangoproject
 
-**TODO**
+Tila **djangoproject** luon djangoprojektin nimeltään **myapp**, joka tekee publicwsgi:n alle myapp hakemiston alihakemistoineen, josta merkittävänä löytyy projektin konfiguraatio settings.xml. Tila tekee myös apachelle konfiguraation myapp.conf, joka säätelee apachelle enabloidut sivut. Djangon automaattisesti tarjoaman /admin sivun lisäksi asetetaan siinä staattiset sivut päälle polussa /static. Tila myös kopioi saltin alta settings.xml tiedoston, johon on tehty muutamia muutoksia, mm. asetettu debug tila pois päältä ja sallittu osoite localhost. Lähteintä olevista Djangon materiaaleista voit katsoa tarkemmin asennuksen yksityiskohdat. Jotta /admin polusta löytyvä sisäänkirjautumissivu näyttää tyylikkäämmältä, tila myös kerää static hakemiston alle djangon staattiset tyylisivut.
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ tree djangoproject/
 <font color="#5555FF"><b>djangoproject/</b></font>
@@ -271,7 +273,7 @@ Undefine TVENV
 
 ##### crmapp
 
-**TODO**
+Tila **crmapp** muodostaa esimerkkisovelluksen, jonka alulla voi demota sovelluksen toiminta. Sovellus on aluksi muodostettu käsin, ja tila vain kopioi sekä crm-hakemiston sisällön paikoilleen sekä myös sqlite3 tietokannan. Myöhemmässä moduulin vaiheessa tietokanta voidaan muuttaa postgressql tietokannaksi.
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ tree crmapp
 <font color="#5555FF"><b>crmapp</b></font>
@@ -329,4 +331,7 @@ Undefine TVENV
 - Karvinen, T. 2022a. Luettavissa [Configuration management systems 2022](https://terokarvinen.com/2021/configuration-management-systems-2022-spring/#arviointi). Luettu 03-05/22.
 - Karvinen, T. 2022b. [Django 4 Instant Customer Database Tutorial](https://terokarvinen.com/2022/django-instant-crm-tutorial/). Luettu 14-15.5.2022.
 - Karvinen, T. 2022c. [Deploy Django 4 - Production Install](https://terokarvinen.com/2022/deploy-django/?fromSearch=django). Luettu 14-15.5.2022.
+- SaltStack Contributors. 2022. [SALT.STATES.USER
+, MANAGEMENT OF USER ACCOUNTS](https://docs.saltproject.io/en/3000/ref/states/all/salt.states.user.html)
 - Shellhacks Contributors. 2020. Luettavissa [Auto Answer “Yes/No” to Prompt – PowerShell & CMD](https://www.shellhacks.com/auto-answer-yes-no-prompt-powershell-cmd/). Luettu 15.5.2022.
+
