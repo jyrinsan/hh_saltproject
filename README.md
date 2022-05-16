@@ -330,9 +330,9 @@ curl: (7) Failed to connect to localhost port 80: Connection refused
 curl: (7) Failed to connect to localhost port 80: Connection refused
 </pre>
 
-[Täältä](files/RUN_1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion. 
+[Täältä](files/RUN1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion. 
 
-[Täältä](files/RUN_2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
+[Täältä](files/RUN2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
 
 Ajojen jälkeen testataan taas curlilla:
 <pre><font color="#55FF55"><b>sanna@sanna-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ curl http://localhost/admin
