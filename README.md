@@ -322,7 +322,12 @@ Tila **crmapp** muodostaa esimerkkisovelluksen, jonka alulla voi demota sovelluk
 
 #### Testaus
 
-**TODO**
+Moduulin toteutus ja testaus suoritettiin Windows-raudalla, jossa oli asennettuna VirtualBoxiin 2 eri Debian 11-konetta, joista toisesta tehtiin salt-master ja toisesta salt-minion. Salt masterilla moduuli on /srv/salt hakemistossa, jonka sisältö vietiin versionhallintaan. Kehitystä tehtiin askel kerrallaan asentaen ensin Debianille asia manuaalisesti ja sen jälkeen automatisoimalla saltila. Useita kertoja (tai kymmeniä jopa) tehtiin uusi orja-debian kone, ja testattiin puhtaalla debianilla toimiiko moduuli.
+
+[Täältä](RUN_1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion.
+
+[Täältä](RUN_2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
+
 
 
 ### Lähteet
