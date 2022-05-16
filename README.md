@@ -1,33 +1,327 @@
-## Django ympäristö Saltilla
-Moduulin tarkoitus: Asentaa ympäristö Django-webbisovelluksen kehittämiseen Linux-palvelimille. 
+## Django tuotantoympäristö SaltStackilla
+
+Moduulin tarkoitus on asentaa Django-tuotantoympäristö webbipalvelun julkaisuun Linux-palvelimille. Moduuli asentaa djangon, apachen, tulimuurin, postgresql tietokannan sekä hyödyllisiä pikkusovelluksia, joita sovelluksen tekoon tarvitaan. Moduuli asentaa myös yksinkertaisen esimerkkisovelluksen, jolla ympäristön toimintaa voi demota. Tämän hetkinen versio käyttää vielä sqlite3 kantaa, jatkokehityksessä kanta aiotaan vaihtaa postgresql-kantaan, jonka vuoksi sen asennus on jo otettu mukaan tähän.
 
 Toteuttaja: Sanna Jyrinki
 
+Kypsyysaste: Beta
+
+Moduulin lisenssi: [GNU General Public License v2.0](https://opensource.org/licenses/gpl-2.0.php)
+
 ### Suunnitelma lopulliselle versiolle
-- tuotantoserveri:
+- moduuli sisältää seuraavat tilat:
   - appikset: hyödyllisiä pikkuohjelmia micro, bash-completion, pwgen, tree
   - palomuuri: ufw palomuurin, asennus, enablointi ja avaus ssh ja apache portille
   - apache asennus, testisivu ja käyttäjän kotisivu
   - django tuotantoasennus
-  - testisovellus, jolla toiminta voidaan demota
-- jatkokehitysehdotuksia, joita ei keretty toteuttaa
+  - testisovellus crm, jolla toiminta voidaan demota
+  - postgresql: tietokanta jatkokehitystä varten (django sisältää oletuksena kevyen sqlite3 tietokannan)
+- jatkokehitysehdotuksia, joita ei keretty toteuttaa tähän versioon
   - kehitysserveri, jossa django asennetaan kehitysserverinä
   - postgressql ja sen käyttöönotto djangossa vakiona olevan sqllite3:n sijaan
+  - jinjalla voisi siistiä usein toistuvat hakemistorakenteen yhdessä paikassa oleviksi vakioiksi
+  - ssh ja sftp mahdollisesti olisi myös hyödyllistä asentaa, jos on tarpeen toimia myös ulkoisen virtuaalipalvelimen kanssa
 
-Moduulin lisenssi: [GNU General Public License v2.0](https://opensource.org/licenses/gpl-2.0.php)
+### Toteutus
 
-Kypsyysaste: Beta
+Moduuli sisältää seuraavat tilat ja top.sls tiedoston, jonka avulla koko moduulin saa ajettua 
+```
+sudo salt '*' state.apply
+```
 
-### Beta-versio
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls
+<font color="#5555FF"><b>apache</b></font>  <font color="#5555FF"><b>appsit</b></font>  <font color="#5555FF"><b>crmapp</b></font>  <font color="#5555FF"><b>django</b></font>  <font color="#5555FF"><b>djangoproject</b></font>  <font color="#5555FF"><b>firewall</b></font>  <font color="#5555FF"><b>postgresql</b></font>  top.sls
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat top.sls 
+base:
+  &apos;*&apos;:
+    - appsit
+    - firewall
+    - postgresql
+    - apache
+    - django
+    - djangoproject
+    - crmapp
+</pre>
 
-Moduulin ajo monta kertaa peräkkäin osoittaa sen olevan idempotentti eli muutoksia ei tapahdu kun mitään ei ole muutettu
+#### Moduulin tilat
 
-### Alpha-versio
-- micro tekstieditori
-- ufw palomuuri, enablointi ja avaus ssh portille
-- apache asennus, testisivu ja käyttäjän kotisivu
+##### appsit
 
-![Image](images/alpha.PNG)
+Tila **appsit** asentaa yksinkertaisia pikkusovelluksia, jotka osoittautuivat hyödyllisiksi djangon asennuksessa ja djangosovelluksen teossa.
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls appsit
+init.sls
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat appsit/init.sls 
+appsit:
+  pkg.installed:
+    - pkgs:
+      - micro
+      - bash-completion
+      - pwgen
+      - tree
+</pre>
+
+##### firewall
+
+Tila **firewall** asentaa ja konfiguroi ufw tulimuurin. Se enabloi sen serverin käynnistyessä, ja avaa reiät ssh:n ja apache:n portteihin.
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls firewall
+init.sls
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat firewall/init.sls 
+ufw:
+  pkg.installed
+
+&apos;ufw enable&apos;:
+  cmd.run:
+    - unless: &quot;ufw status verbose |grep &apos;Status: active&apos;&quot;
+
+&apos;ufw allow 22/tcp&apos;:
+  cmd.run:
+    - unless: &quot;ufw status verbose |grep &apos;^22/tcp&apos; &quot;
+
+&apos;ufw allow 80/tcp&apos;:
+  cmd.run:
+    - unless: &quot;ufw status verbose |grep &apos;^80/tcp&apos; &quot;
+
+ufw.service:
+  service.running
+</pre>
+
+##### postgresql
+
+Tila **postgresql** asentaa postgresql tietokantademonin ja käynnistää sen. Ko. tietokantaa ei kuitenkaan vielä tässä versiossa hyödynnetä djangon kanssa.
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls postgresql
+init.sls
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat postgresql/init.sls 
+postgresql:
+  pkg.installed
+
+postgresql.service:
+  service.running
+</pre>
+
+##### apache
+
+Tila **apache** asentaa apachen, muodostaa oletustestisivun ja aktivoi käyttäjien kotisivun, jos käyttäjä tekee kotisivun oman kotihakemiston public_html hakemistoon. Tila myös käynnistää apachen, jos sitä ei  vielä ole käynnistetty tai jos käyttäjän kotihakemistot aktivoivat moduulit ovat muuttuneet.
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls apache
+default-index.html  init.sls
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat apache/init.sls 
+apache2:
+  pkg.installed
+
+/var/www/html/index.html:
+  file.managed:
+    - source: salt://apache/default-index.html
+
+/etc/apache2/mods-enabled/userdir.conf:
+  file.symlink:
+    - target: ../mods-available/userdir.conf
+
+/etc/apache2/mods-enabled/userdir.load:
+  file.symlink:
+    - target: ../mods-available/userdir.load
+
+apache2.service:
+  service.running:
+    - watch:
+      - file: /etc/apache2/mods-enabled/userdir.conf
+      - file: /etc/apache2/mods-enabled/userdir.load
+</pre>
+
+##### django
+
+**TODO**
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls django
+init.sls  requirements.txt
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat django/requirements.txt 
+django
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat django/init.sls 
+asennukset:
+  pkg.installed:
+    - pkgs:
+      - virtualenv
+      - libapache2-mod-wsgi-py3
+
+adduser:
+  user.present:
+    - name: django
+    - password: $1$JeVTvOSq$lbPDz6CkLxA.dmo8CWml20
+    
+/home/django/publicwsgi:
+  file.directory:
+    - user: django
+    - group: django
+    - mode: 0755
+
+&apos;virtualenv -p python3 --system-site-packages env&apos;:
+  cmd.run:
+    - cwd: /home/django/publicwsgi
+    - runas: django
+    - unless: ls |grep env
+
+&apos;source env/bin/activate&apos;:
+  cmd.run:
+    - cwd: /home/django/publicwsgi
+    - shell: /bin/bash
+    - runas: django
+    - stateful: True
+
+/home/django/publicwsgi/requirements.txt:
+  file.managed:
+    - source: salt://django/requirements.txt
+    - user: django
+    - group: django
+    - mode: 0644
+
+&apos;pip install -r requirements.txt&apos;:
+  cmd.run:
+    - cwd: /home/django/publicwsgi
+    - unless: django-admin --version
+</pre>
+
+##### djangoproject
+
+**TODO**
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ tree djangoproject/
+<font color="#5555FF"><b>djangoproject/</b></font>
+├── init.sls
+├── myapp.conf
+├── settings.py
+└── <font color="#5555FF"><b>static</b></font>
+    └── staticpage.html
+
+1 directory, 4 files
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat djangoproject/myapp.conf 
+Define TDIR /home/django/publicwsgi/myapp
+Define TWSGI /home/django/publicwsgi/myapp/myapp/wsgi.py
+Define TUSER django
+Define TVENV /home/django/publicwsgi/env/lib/python3.9/site-packages
+
+&lt;VirtualHost *:80&gt;
+        Alias /static/ ${TDIR}/static/
+        &lt;Directory ${TDIR}/static/&gt;
+                Require all granted
+        &lt;/Directory&gt;
+
+        WSGIDaemonProcess ${TUSER} user=${TUSER} group=${TUSER} threads=5 python-path=&quot;${TDIR}:${TVENV}&quot;
+        WSGIScriptAlias / ${TWSGI}
+        &lt;Directory ${TDIR}&gt;
+             WSGIProcessGroup ${TUSER}
+             WSGIApplicationGroup %{GLOBAL}
+             WSGIScriptReloading On
+             &lt;Files wsgi.py&gt;
+                Require all granted
+             &lt;/Files&gt;
+        &lt;/Directory&gt;
+
+&lt;/VirtualHost&gt;
+
+Undefine TDIR
+Undefine TWSGI
+Undefine TUSER
+Undefine TVENV
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat djangoproject/init.sls 
+&apos;django-admin startproject myapp&apos;:
+  cmd.run:
+    - cwd: /home/django/publicwsgi
+    - runas: django
+    - unless: ls | grep myapp
+
+/etc/apache2/sites-available/myapp.conf:
+  file.managed:
+    - source: salt://djangoproject/myapp.conf
+
+/etc/apache2/sites-enabled/myapp.conf:
+  file.symlink:
+    - target: ../sites-available/myapp.conf
+
+/etc/apache2/sites-enabled/000-default.conf:
+  file.absent
+
+/home/django/publicwsgi/myapp/myapp/settings.py:
+  file.managed:
+    - source: salt://djangoproject/settings.py
+    - user: django
+    - group: django
+    - mode: 0644
+
+&apos;echo yes python3 /manage.py collectstatic&apos;:
+  cmd.run:
+    - cwd: /home/django/publicwsgi/myapp
+    - runas: django
+    - unless: ls | grep static
+
+/home/django/publicwsgi/myapp/static:
+  file.recurse:
+    - source: salt://djangoproject/static
+    - user: django
+    - group: django
+    - dir_mode: 0755
+    - file_mode: 0755
+    - makedirs: True
+    - recurse:
+      - user
+      - group
+      - mode
+</pre>
+
+##### crmapp
+
+**TODO**
+
+<pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ tree crmapp
+<font color="#5555FF"><b>crmapp</b></font>
+├── <span style="background-color:#00AA00"><font color="#0000AA">crm</font></span>
+│   ├── <font color="#55FF55"><b>admin.py</b></font>
+│   ├── <font color="#55FF55"><b>apps.py</b></font>
+│   ├── <font color="#55FF55"><b>__init__.py</b></font>
+│   ├── <font color="#5555FF"><b>migrations</b></font>
+│   │   ├── <font color="#55FF55"><b>0001_initial.py</b></font>
+│   │   ├── <font color="#55FF55"><b>0002_alter_customer_name.py</b></font>
+│   │   ├── <font color="#55FF55"><b>__init__.py</b></font>
+│   │   └── <font color="#5555FF"><b>__pycache__</b></font>
+│   │       ├── <font color="#55FF55"><b>0001_initial.cpython-39.pyc</b></font>
+│   │       ├── <font color="#55FF55"><b>0002_alter_customer_name.cpython-39.pyc</b></font>
+│   │       └── <font color="#55FF55"><b>__init__.cpython-39.pyc</b></font>
+│   ├── <font color="#55FF55"><b>models.py</b></font>
+│   ├── <font color="#5555FF"><b>__pycache__</b></font>
+│   │   ├── <font color="#55FF55"><b>admin.cpython-39.pyc</b></font>
+│   │   ├── <font color="#55FF55"><b>apps.cpython-39.pyc</b></font>
+│   │   ├── <font color="#55FF55"><b>__init__.cpython-39.pyc</b></font>
+│   │   └── <font color="#55FF55"><b>models.cpython-39.pyc</b></font>
+│   ├── <font color="#55FF55"><b>tests.py</b></font>
+│   └── <font color="#55FF55"><b>views.py</b></font>
+├── <font color="#55FF55"><b>db.sqlite3</b></font>
+└── init.sls
+
+4 directories, 18 files
+<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat crmapp/init.sls 
+/home/django/publicwsgi/myapp/db.sqlite3:
+  file.managed:
+    - source: salt://crmapp/db.sqlite3
+    - user: django
+    - group: django
+    - mode: 0755
+
+/home/django/publicwsgi/myapp/crm:
+  file.recurse:
+    - source: salt://crmapp/crm
+    - user: django
+    - group: django
+    - dir_mode: 0755
+    - file_mode: 0755
+    - makedirs: True
+    - replace: True
+</pre>
+
+#### Testaus
+
+**TODO**
+
 
 ### Lähteet
 
