@@ -16,7 +16,7 @@ Linux             Oracle Virtual Box 6.1, Debian 11.3
 
 ### Toteutussuunnitelma
 - moduuli sisältää seuraavat tilat:
-  - appikset: hyödyllisiä pikkuohjelmia micro, bash-completion, pwgen, tree
+  - appikset: hyödyllisiä pikkuohjelmia micro, bash-completion, pwgen, tree, curl
   - palomuuri: ufw palomuurin, asennus, enablointi ja avaus ssh ja apache portille
   - postgresql: tietokanta jatkokehitystä varten (django sisältää oletuksena kevyen sqlite3 tietokannan)
   - apache asennus, testisivu ja käyttäjän kotisivu
@@ -25,7 +25,7 @@ Linux             Oracle Virtual Box 6.1, Debian 11.3
 
 - jatkokehitysehdotuksia, joita ei keretty toteuttaa tähän versioon
   - kehitysserveri, jossa django asennetaan kehitysserverinä
-  - postgressql ja sen käyttöönotto djangossa vakiona olevan sqllite3:n sijaan
+  - postgressql ja sen käyttöönotto djangossa vakiona olevan sqlite3:n sijaan
   - jinjalla voisi siistiä usein toistuvat esim tunnukset/hakemistopolut yhdessä paikassa oleviksi vakioiksi
   - ssh ja sftp mahdollisesti olisi myös hyödyllistä asentaa, jos on tarpeen toimia myös ulkoisen virtuaalipalvelimen kanssa
 
@@ -66,6 +66,7 @@ appsit:
       - bash-completion
       - pwgen
       - tree
+      - curl
 </pre>
 
 ##### firewall
@@ -139,13 +140,10 @@ apache2.service:
 
 ##### django
 
-Tila **django** luo django nimisen käyttäjän (salasana on django, joka asetetaa ssh tiedostoon hashattuna linux-komennolla `openssl passwd -1` [SaltStack Contributors, 2022](https://docs.saltproject.io/en/3000/ref/states/all/salt.states.user.html). Tila luo käyttäjän kotihakemiston alle publicwsgi-hakemiston ja asentaa djangon. Tilassa on myös asennettu virtualenv-ympäristö ja aktivoitu se, mutta en tiedä toimiiko se, kun se ei näkynyt missään. Ilmeisesti sillä ei ole itse toimintaan mitään vaikutusta, joten ehkäpä kokeilen vielä poistaa.
-
+Tila **django** luo django nimisen käyttäjän (salasana on django, joka asetetaa ssh tiedostoon hashattuna linux-komennolla `openssl passwd -1` [SaltStack Contributors, 2022](https://docs.saltproject.io/en/3000/ref/states/all/salt.states.user.html). Tila luo käyttäjän kotihakemiston alle publicwsgi-hakemiston ja asentaa djangon. Tilassa on myös asennettu virtualenv-ympäristö. Sitä ei salt-asennuksen yhteydessä hyödynnetä, mutta ylläpitäjä voi kaivata sitä sovelluksen manuaaliseen kehittämiseen.
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ ls django
 init.sls  requirements.txt
-<font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat django/requirements.txt 
-django
 <font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ cat django/init.sls 
 asennukset:
   pkg.installed:
@@ -170,13 +168,6 @@ adduser:
     - runas: django
     - unless: ls |grep env
 
-&apos;source env/bin/activate&apos;:
-  cmd.run:
-    - cwd: /home/django/publicwsgi
-    - shell: /bin/bash
-    - runas: django
-    - stateful: True
-
 /home/django/publicwsgi/requirements.txt:
   file.managed:
     - source: salt://django/requirements.txt
@@ -192,7 +183,7 @@ adduser:
 
 ##### djangoproject
 
-Tila **djangoproject** luon djangoprojektin nimeltään **myapp**, joka tekee publicwsgi:n alle myapp hakemiston alihakemistoineen, josta merkittävänä löytyy projektin konfiguraatio settings.xml. Tila tekee myös apachelle konfiguraation myapp.conf, joka säätelee apachelle enabloidut sivut. Djangon automaattisesti tarjoaman /admin sivun lisäksi asetetaan siinä staattiset sivut päälle polussa /static. Tila myös kopioi saltin alta settings.xml tiedoston, johon on tehty muutamia muutoksia, mm. asetettu debug tila pois päältä ja sallittu osoite localhost. Lähteintä olevista Djangon materiaaleista voit katsoa tarkemmin asennuksen yksityiskohdat. Jotta /admin polusta löytyvä sisäänkirjautumissivu näyttää tyylikkäämmältä, tila myös kerää static hakemiston alle djangon staattiset tyylisivut.
+Tila **djangoproject** luon djangoprojektin nimeltään **myapp**, joka tekee publicwsgi:n alle myapp hakemiston alihakemistoineen. Tila tekee myös apachelle konfiguraation myapp.conf, joka säätelee apachelle enabloidut sivut. Djangon automaattisesti tarjoaman /admin sivun lisäksi asetetaan siinä staattiset sivut päälle polussa /static. Tila myös kopioi saltin alta settings.xml tiedoston, johon on tehty muutamia muutoksia, mm. asetettu debug tila pois päältä ja sallittu osoite localhost. Lähteinä olevista Djangon materiaaleista voit katsoa tarkemmin asennuksen yksityiskohdat. Jotta /admin polusta löytyvä sisäänkirjautumissivu näyttää tyylikkäämmältä, tila myös kerää static hakemiston alle djangon staattiset tyylisivut.
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ tree djangoproject/
 <font color="#5555FF"><b>djangoproject/</b></font>
@@ -257,7 +248,7 @@ Undefine TVENV
     - group: django
     - mode: 0644
 
-&apos;echo yes python3 /manage.py collectstatic&apos;:
+&apos;echo yes | python3 ./manage.py collectstatic&apos;:
   cmd.run:
     - cwd: /home/django/publicwsgi/myapp
     - runas: django
@@ -279,7 +270,7 @@ Undefine TVENV
 
 ##### crmapp
 
-Tila **crmapp** muodostaa esimerkkisovelluksen, jonka alulla voi demota sovelluksen toiminta. Sovellus on aluksi muodostettu käsin, ja tila vain kopioi sekä crm-hakemiston sisällön paikoilleen sekä myös sqlite3 tietokannan. Myöhemmässä moduulin vaiheessa tietokanta voidaan muuttaa postgressql tietokannaksi.
+Tila **crmapp** muodostaa esimerkkisovelluksen, jonka alulla voi demota sovelluksen toiminta. Sovellus on aluksi muodostettu käsin, ja tila vain kopioi sekä crm-hakemiston sisällön paikoilleen sekä myös sqlite3 tietokannan. Myöhemmässä moduulin vaiheessa tietokanta voidaan muuttaa postgressql tietokannaksi. 
 
 <pre><font color="#55FF55"><b>master@master-virtualbox</b></font>:<font color="#5555FF"><b>/srv/salt</b></font>$ tree crmapp
 <font color="#5555FF"><b>crmapp</b></font>
@@ -339,11 +330,25 @@ curl: (7) Failed to connect to localhost port 80: Connection refused
 curl: (7) Failed to connect to localhost port 80: Connection refused
 </pre>
 
-[Täältä](runlogs/RUN_1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion. Kuten näkyy punaisella, niin ensimmäinen ajo päätyy virheeseen. Ilmeisesti moduuli on liian iso tai verkko koneiden välillä huono, master ei saa tarpeeksi nopeasti vastausta minionilta. Jatkettaessa ajoa `salt-run jobs.lookup_jid 20220516150644685475` menee loppuun virheittä
+[Täältä](files/RUN_1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion. 
 
-salt-run jobs.lookup_jid 20220516150644685475
+[Täältä](files/RUN_2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
 
-[Täältä](RUN_2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
+Ajojen jälkeen testataan taas curlilla:
+<pre><font color="#55FF55"><b>sanna@sanna-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ curl http://localhost/admin
+<font color="#55FF55"><b>sanna@sanna-virtualbox</b></font>:<font color="#5555FF"><b>~</b></font>$ curl http://localhost/static/staticpage.html
+Tässä jokin staattinen sivu
+</pre>
+
+Nyt kun orjakoneella avataan selain osoitteessa `http://localhost/admin`, päästään sovelluksen login näkymän avulla sisälle sovellukseen admin tunnuksella (tunnus admin, salasana ftqjbp5ayj4XraBGOR4s)
+
+![Images](files/django_login.PNG)
+![Images](files/django_screen1.PNG)
+![Images](files/django_screen2.PNG)
+
+### Asennusohje
+
+Moduulia voit testata kopioimalla sen salt-masterisi /srv/salt hakemistoon ja ajamalla ´sudo salt '*' state.apply`, joka ajaa moduulin kaikille masterille rekisteröidyille orjillesi. Jos haluat jonkun muun käyttäjän kuin django, pitää tiloja muokata. Oma sovellus pitää tehdä manuaalisesti, ohjeita löytyy alla olevista Tero Karvisen loistavista Django materiaaleista.
 
 ### Lähteet
 
