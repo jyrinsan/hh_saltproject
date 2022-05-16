@@ -2,11 +2,17 @@
 
 Moduulin tarkoitus on asentaa Django-tuotantoympäristö webbipalvelun julkaisuun Linux-palvelimille. Moduuli asentaa djangon, apachen, tulimuurin, postgresql tietokannan sekä hyödyllisiä pikkusovelluksia, joita sovelluksen tekoon tarvitaan. Moduuli asentaa myös yksinkertaisen crm-esimerkkisovelluksen, jolla ympäristön toimintaa voi demota. Tämän hetkinen versio käyttää vielä sqlite3 kantaa, jatkokehityksessä kanta aiotaan vaihtaa postgresql-kantaan, jonka vuoksi sen asennus on jo otettu mukaan tähän.
 
-Toteuttaja: Sanna Jyrinki
-
-Kypsyysaste: Beta
-
 Moduulin lisenssi: [GNU General Public License v2.0](https://opensource.org/licenses/gpl-2.0.php)
+
+```
+Nimi              Sanna Jyrinki
+Oppilaitos        Haaga-Helian ammattikorkeakoulu
+Kurssi            Palvelinten hallinta ICT4TN022-3015
+Opettaja          Tero Karvinen
+Tietokoneena      AMD Ryzen 5 PRO 4650U with Radeon Graphics 2.10 GHz
+Käyttöjärjestelmä Windows 11 Pro, Versio 21H2
+Linux             Oracle Virtual Box 6.1, Debian 11.3
+```
 
 ### Toteutussuunnitelma
 - moduuli sisältää seuraavat tilat:
@@ -327,8 +333,6 @@ Moduulin toteutus ja testaus suoritettiin Windows-raudalla, jossa oli asennettun
 [Täältä](RUN_1.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan puhtaalle Debianille, jonne ei vielä ole asennettu muutakuin salt-minion.
 
 [Täältä](RUN_2.MD) löytyy salt loki, kun koko valmistunut moduuli ajetaan toisen kerran peräkkäin, josta näkyy, että koko moduuli on idempotentti, eli mitään uutta ei asennu, koska mitään ei ole muutettu.
-
-
 
 ### Lähteet
 
